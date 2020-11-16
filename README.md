@@ -1,2 +1,3 @@
 # Projet-Pedagogique
-repos collaboratif de travail sur le projet pédagogique
+Dépot collaboratif de travail sur le projet pédagogique
+par Anthony Marais, Lukas Clave et Samy Boubaker
