@@ -4,6 +4,7 @@
 
 Préparation des outils collaboratif:
 
+- Création du serveur discord ✅
 - github ✅
 - gitkraken ✅
 - trello ✅
