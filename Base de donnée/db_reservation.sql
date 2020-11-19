@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `db_reservation` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `db_reservation`;
 -- MySQL dump 10.13  Distrib 5.7.32, for Linux (x86_64)
 --
 -- Host: localhost    Database: db_reservation
@@ -110,4 +112,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-18 16:57:24
+-- Dump completed on 2020-11-19 14:03:53
