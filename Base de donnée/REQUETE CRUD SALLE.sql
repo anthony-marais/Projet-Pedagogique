@@ -1,10 +1,4 @@
 use db_reservation ;
-#DROP PROCEDURE IF EXISTS PI_SALLE; 
-#DROP PROCEDURE IF EXISTS PI_SALLE_SIMPLE; 
-#DROP PROCEDURE IF EXISTS PSGetSALLE; 
-#DROP PROCEDURE IF EXISTS PL_SALLE;
-#DROP PROCEDURE IF EXISTS PU_SALLE; 
-#DROP PROCEDURE IF EXISTS PD_SALLE; 
 
 
 
@@ -13,11 +7,11 @@ use db_reservation ;
 # pour que MySQL lise chaque procédure d'un bloc
 DELIMITER $$
 
-/* 
-CRUD TABLE categorie
-*/
+ 
+##CRUD TABLE categorie
 
--- CREATE 
+
+##CREATE 
 
 # Ajoute une catégorie avec un identifiant et un type 
 CREATE PROCEDURE PI_SALLE(IN ID INT, IN SALLE VARCHAR(50))
@@ -25,7 +19,7 @@ CREATE PROCEDURE PI_SALLE(IN ID INT, IN SALLE VARCHAR(50))
     IF EXISTS(SELECT * FROM SALLE WHERE sa_id = ID)
     # Alors on renvoie un message d'erreur
 	THEN 
-		# un numéro d'erreur bidon
+		## un numéro d'erreur bidon
 		SIGNAL SQLSTATE '45000'
 			# avec son message perso
 			SET MESSAGE_TEXT = "L'identifiant existe déjà";
@@ -111,6 +105,4 @@ CREATE PROCEDURE PD_SALLE(IN ID INT)
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "La salle que vous essayez de supprimer n'existe pas";
 	END IF$$
-    
-    
     
