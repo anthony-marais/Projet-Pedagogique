@@ -2,7 +2,7 @@ CREATE DATABASE  IF NOT EXISTS `db_reservation` /*!40100 DEFAULT CHARACTER SET l
 USE `db_reservation`;
 -- MySQL dump 10.13  Distrib 8.0.22, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: db_reservation
+-- Host: localhost    Database: db_reservation
 -- ------------------------------------------------------
 -- Server version	8.0.22
 
@@ -36,15 +36,6 @@ CREATE TABLE `INFORMATION` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `INFORMATION`
---
-
-LOCK TABLES `INFORMATION` WRITE;
-/*!40000 ALTER TABLE `INFORMATION` DISABLE KEYS */;
-/*!40000 ALTER TABLE `INFORMATION` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `MAIL`
 --
 
@@ -60,15 +51,6 @@ CREATE TABLE `MAIL` (
   CONSTRAINT `fk_MAIL_1` FOREIGN KEY (`in_id`) REFERENCES `INFORMATION` (`in_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `MAIL`
---
-
-LOCK TABLES `MAIL` WRITE;
-/*!40000 ALTER TABLE `MAIL` DISABLE KEYS */;
-/*!40000 ALTER TABLE `MAIL` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `RESERVATION`
@@ -94,15 +76,6 @@ CREATE TABLE `RESERVATION` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `RESERVATION`
---
-
-LOCK TABLES `RESERVATION` WRITE;
-/*!40000 ALTER TABLE `RESERVATION` DISABLE KEYS */;
-/*!40000 ALTER TABLE `RESERVATION` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `SALLE`
 --
 
@@ -115,50 +88,6 @@ CREATE TABLE `SALLE` (
   PRIMARY KEY (`sa_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `SALLE`
---
-
-LOCK TABLES `SALLE` WRITE;
-/*!40000 ALTER TABLE `SALLE` DISABLE KEYS */;
-INSERT INTO `SALLE` VALUES (12,'SIMPLON'),(13,'SIMPLON_BIS'),(15,'SIMPLON');
-/*!40000 ALTER TABLE `SALLE` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Dumping events for database 'db_reservation'
---
-
---
--- Dumping routines for database 'db_reservation'
---
-/*!50003 DROP PROCEDURE IF EXISTS `CREATE_SALLE_no_ID` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CREATE_SALLE_no_ID`(IN SALLE VARCHAR(45))
-BEGIN
-	IF EXISTS (SELECT * FROM SALLE WHERE sa_name = SALLE)
-	THEN 
-		SIGNAL SQLSTATE "64646"
-			SET MESSAGE_TEXT = 'choissisez un autre nom pour la salle';
-	ELSE
-		INSERT INTO SALLE(sa_name)
-		VALUES(SALLE);
-	END IF;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -169,4 +98,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-25 15:42:06
+-- Dump completed on 2020-11-26 13:48:47
