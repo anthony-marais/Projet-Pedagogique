@@ -1,0 +1,27 @@
+
+<h3> VEUILLEZ RENSEIGNER VOS INFORMATIONS</h3>
+    
+        <form method="POST" ACTION="{{ url_for('identification') }}">
+
+            <label for =" pseudo">Entrez votre adresse mail:</label>     
+            <input type=" text" id="mail"  name='mail'><br><br>
+
+            <label for =" mdp">Entrez votre nom:</label>
+            <input type="text" id="nom"  name='nom'><br><br>
+
+            <label for =" mdp">Entrez votre prenom:</label>
+            <input type="text" id="prenom"  name='prenom'><br><br>
+
+            <label for =" mdp">Entrez votre poste:</label>
+            <input type="text" id="poste"  name='poste'><br><br>
+
+            <label for =" mdp">Entrez votre organisation:</label>
+            <input type="text" id="organisation"  name='organisation'><br><br>
+            
+            <input type='submit' value='Se connecter' class="btn btn-danger" >
+            
+            <textarea>par défaut cet élément sera renseigné avec ce texte</textarea>
+
+        </form>
+
+
