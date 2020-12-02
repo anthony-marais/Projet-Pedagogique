@@ -63,7 +63,7 @@ CREATE PROCEDURE PL_SALLE()
 
 # Change le nom de la salle d'identifiant ID
 CREATE PROCEDURE PU_SALLE(IN ID INT, IN SALLE VARCHAR(50))
-	# Si la catégorie existe
+	# Si la salle existe
 	IF EXISTS(SELECT * FROM SALLE WHERE sa_id = ID)
     # Alors
 	THEN 
