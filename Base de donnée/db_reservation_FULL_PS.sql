@@ -32,8 +32,17 @@ CREATE TABLE `INFORMATION` (
   `in_poste` varchar(50) NOT NULL,
   `in_organisation` varchar(100) NOT NULL,
   PRIMARY KEY (`in_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `INFORMATION`
+--
+
+LOCK TABLES `INFORMATION` WRITE;
+/*!40000 ALTER TABLE `INFORMATION` DISABLE KEYS */;
+/*!40000 ALTER TABLE `INFORMATION` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `MAIL`
@@ -50,8 +59,17 @@ CREATE TABLE `MAIL` (
   PRIMARY KEY (`ma_id`),
   KEY `fk_MAIL_1_idx` (`in_id`),
   CONSTRAINT `fk_MAIL_1` FOREIGN KEY (`in_id`) REFERENCES `INFORMATION` (`in_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `MAIL`
+--
+
+LOCK TABLES `MAIL` WRITE;
+/*!40000 ALTER TABLE `MAIL` DISABLE KEYS */;
+/*!40000 ALTER TABLE `MAIL` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `RESERVATION`
@@ -77,6 +95,15 @@ CREATE TABLE `RESERVATION` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `RESERVATION`
+--
+
+LOCK TABLES `RESERVATION` WRITE;
+/*!40000 ALTER TABLE `RESERVATION` DISABLE KEYS */;
+/*!40000 ALTER TABLE `RESERVATION` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `SALLE`
 --
 
@@ -89,6 +116,15 @@ CREATE TABLE `SALLE` (
   PRIMARY KEY (`sa_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `SALLE`
+--
+
+LOCK TABLES `SALLE` WRITE;
+/*!40000 ALTER TABLE `SALLE` DISABLE KEYS */;
+/*!40000 ALTER TABLE `SALLE` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping routines for database 'db_reservation'
@@ -858,4 +894,4 @@ ALTER DATABASE `db_reservation` CHARACTER SET utf8 COLLATE utf8_general_ci ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-09 15:11:55
+-- Dump completed on 2020-12-09 15:37:56
