@@ -1,0 +1,2 @@
+export FLASK_APP=app_2
+export FLASK_ENV=development
