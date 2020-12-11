@@ -16,7 +16,32 @@ app = Flask(__name__)
 
 app.config.from_object(Config)
 
-@app.route('/')
-def PAGE_ACCUEIL():
+@app.route('/home')
+def page_acceuil():
     #return "Bienvenue sur la page d'accueil"
     return render_template('index_booking.html')
+
+
+
+
+
+
+@app.route('/register')
+
+def register():
+
+    return render_template('register_booking.html')
+
+
+#@app.route('/login')
+
+#def login():
+
+#@app.route('/user')
+
+#def user():
+
+
+#@app.route('/admin')
+
+#def admin():
