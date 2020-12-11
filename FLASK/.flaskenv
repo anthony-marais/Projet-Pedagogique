@@ -1,2 +1,2 @@
-export FLASK_APP=app_2
+export FLASK_APP=BOOKING_FLASK
 export FLASK_ENV=development
