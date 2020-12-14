@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired , Email , Length , ValidationError
 class RegisterForm(FlaskForm):
     email = StringField('Email' , validators=[DataRequired(), Email()])
     password = PasswordField('Mot de passe' , validators=[DataRequired(), Length(min=6, max=20)])
-    submit = SubmitField("S'inscrire")
+    submit = SubmitField("Connexion")
 
 
     def validate_email(self, email):
