@@ -174,6 +174,7 @@ body.loggedin {
 
 
 
+
 @charset "UTF-8";
 @import url(font-awesome.min.css);
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700");
@@ -1744,7 +1745,7 @@ body.loggedin {
 	}
 
 	body {
-		background: #fff;
+		background: rgb(54, 54, 54);
 	}
 
 		body.is-loading *, body.is-loading *:before, body.is-loading *:after {
@@ -1805,7 +1806,7 @@ body.loggedin {
 		}
 
 	body {
-		background-color: #fff;
+		background-color: rgb(59, 59, 59);
 		color: #444;
 	}
 
