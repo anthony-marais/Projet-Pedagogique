@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 # import de la librairie json pour lire le fichier de config contenant les information de connexion
 import json
-
+import hashlib
 
 
 app = Flask(__name__)
@@ -70,7 +70,7 @@ def login():
         # Create variables for easy access
         mail = request.form['mail']
         password = request.form['password']
-
+        password = hashlib.sha1(str.encode(password)).hexdigest()
 
          
 
@@ -149,7 +149,7 @@ def register():
         repeat_password = str(repeat_password)
         in_id = 2
         in_id = int(in_id)
-
+        
 
         
 
@@ -169,6 +169,8 @@ def register():
         elif not password or not email:
             msg = 'Please fill out the form!'
         else:
+            password=hashlib.sha1(str.encode(password)).hexdigest()
+            password = str(password)
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute('INSERT INTO INFORMATION VALUES (DEFAULT, %s, %s,%s, %s, %s,%s, %s)', (email, password, name,surname,user_poste,user_org, in_id) )
             cursor.close()
