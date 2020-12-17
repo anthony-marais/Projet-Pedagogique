@@ -1,0 +1,32 @@
+USE db_reservation ; 
+
+
+START TRANSACTION; 
+
+
+
+
+CALL PI_ROLE(3,'USER PREMIUM');
+
+SELECT * FROM ROLE ;
+SET @roid = (SELECT role_id from ROLE where role_intitule = 'USER PREMIUM') ;
+
+
+
+
+SELECT * FROM ROLE;
+
+
+CALL PSGetROLE(@roid)
+CALL PL_ROLE()
+
+CALL PU_ROLE (@roid,'USERS')
+SELECT * FROM ROLE;
+CALL PU_ROLE (@roid, 'USER PREMIUM')
+
+SELECT * FROM ROLE;
+CALL PD_ROLE(@roid)
+SELECT * FROM ROLE;
+rollback;
+
+
