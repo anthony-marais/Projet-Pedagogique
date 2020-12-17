@@ -102,7 +102,6 @@ def login():
 
 
 
-
 # http://localhost:5000/python/logout - this will be the logout page
 @app.route('/login/logout')
 def logout():
@@ -162,8 +161,11 @@ def register():
         elif not password or not email:
             msg = 'Please fill out the form!'
         else:
-            password=hashlib.sha1(str.encode(password)).hexdigest()
+
+            password = generate_password_hash(password)
             password = str(password)
+
+
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute('INSERT INTO INFORMATION VALUES (DEFAULT, %s, %s,%s, %s, %s,%s, %s)', (email, password, name,surname,user_poste,user_org, in_id) )
             cursor.close()
