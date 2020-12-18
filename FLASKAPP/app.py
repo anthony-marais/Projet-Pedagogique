@@ -20,6 +20,7 @@ app = Flask(__name__)
 app.secret_key = 'your secret key'
 
 
+#**************************************************************************************CREATION DE LA CONNEXION SQLALCHEMY**********************************************************
 
 # assignation de la config.json à fichierConfig
 fichierConfig = "Projet-Pedagogique/FLASKAPP/config.json"
@@ -33,23 +34,13 @@ with open(fichierConfig) as fichier:
 # en dehors de la class car cet élémeent ne change pas
 engine = create_engine('mysql+' + config["connector"] + '://' + config["user"] + ":" + config["password"] + "@" + config["host"] + ":" + config["port"] + "/" + config["bdd"], echo=False)
 connection = engine.raw_connection()
-
-# Enter your database connection details below
-app.config['MYSQL_HOST'] = config["host"]
-app.config['MYSQL_USER'] = config["user"]
-app.config['MYSQL_PASSWORD'] = config["password"]
-app.config['MYSQL_DB'] = config["bdd"]
-
-# Intialize MySQL
-mysql = MySQL(app)
-
-
-
+#**************************************************************************************CREATION DE L'URL /...**********************************************************
 
 @app.route("/")
 def starting_url():
     return redirect("/home")
 
+#**************************************************************************************REDIRECTION DE L'ULR /... à /home  **********************************************************
 
 
 
@@ -57,6 +48,9 @@ def starting_url():
 def acceuil():
     #return "Bienvenue sur la page d'accueil"
     return render_template('index_booking.html')
+
+
+#**************************************************************************************CONNEXION**********************************************************
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,6 +93,7 @@ def login():
 
 
 
+#**************************************************************************************DECONNEXION**********************************************************
 
 
 
@@ -112,10 +107,7 @@ def logout():
    # Redirect to login page
    return redirect(url_for('login'))
 
-
-
-
-
+#**************************************************************************************CREATION DE COMPTE**********************************************************
 
 # http://localhost:5000/pythinlogin/register - this will be the registration page, we need to use both GET and POST requests
 @app.route('/register', methods=['GET', 'POST'])
@@ -178,15 +170,7 @@ def register():
     return render_template('register.html', msg=msg)
 
 
-
-
-
-
-
-
-
-
-
+#**************************************************************************************ACCEUIL USER**********************************************************
 # http://localhost:5000/pythinlogin/home - this will be the home page, only accessible for loggedin users
 @app.route('/login/home')
 def home():
@@ -198,11 +182,7 @@ def home():
     return redirect(url_for('login'))
 
 
-
-
-
-
-
+#**************************************************************************************PAGE PROFIL USER**********************************************************
 
 
 # http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
@@ -221,21 +201,6 @@ def profile():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#**************************************************************************************DEFINITION DU PORT DE l'APP**********************************************************
 if __name__=='__main__':
      app.run(debug=True, port=5000)
