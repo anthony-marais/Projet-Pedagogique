@@ -3,96 +3,55 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Register</title>
-		<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style_reservation.css') }}">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
-
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-	</head>
+		</head>
 	
 	<body>
 
-		
+		<header>
 		<nav class="navtop">
 			<div>
-				<a href="{{ url_for('acceuil') }}"><i class="fas fa-home"></i> BOOKING<span>by Simplon'DATA</span></a>               
+				<a href="{{ url_for('acceuil') }}"><i class="fas fa-home"></i> BOOKING <span>by Simplon'DATA</span></a>       
 				<a href="{{ url_for('home') }}"><i class="fas fa-home"></i>Home</a>
 				<a href="{{ url_for('profile') }}"><i class="fas fa-user-circle"></i>Profile</a>
 				<a href="{{ url_for('reservation') }}"><i class="fas fa-comment-alt"></i>Reservation</a>
 				<a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i>Logout</a>
 			</div>
 		</nav>
-		
+		</header>
 
 		
 		
-
+    <div>
 		<div class="register">
 		
-			<h1>Register</h1>
-			<div class="links">
-				<a href="{{ url_for('login') }}">Login</a>
-				<a href="{{ url_for('register') }}" class="active">Register</a>
-			</div>
-			<form action="{{ url_for('register') }}" method="post" autocomplete="off">
-				
-				<label for="email">
-					<i class="fas fa-envelope"></i>
-				</label>
-				<input type="email" name="email" placeholder="Email" id="email" required>
+			<h1>DEMANDE RESERVATION</h1>
+			
+			
+    <form method="get,post" autocomplete="off">
+    <p>  Salut, J’ai besoin de la salle 736 le 17 janvier entre 8 h et 10 h</p>
+   
+    <textarea rows="5" cols = "37" name="reservation" placeholder="reservation" id="reservation" required></textarea>
 
+    <br>
+		<br>
+        <br>
+		<br>
+        <br>
+    <input type="submit">
+    </form>
+</div>
+</div>
 
-				<label for="Name">
-					<i class="fas fa-id-card"></i>
-				</label>
-				<input type="text" name="name" placeholder="Name" id="name" required>
-				
-				<label for="surname">
-					<i class="fas fa-id-card"></i>
-				</label>
-				<input type="text" name="surname" placeholder="Surname" id="surname" required>
-				
-
-				<label for="user_poste">
-					<i class="fas fa-user-tie"></i>
-				</label>
-				<input type="text" id="user_poste" name="user_poste" required autofocus size="40" placeholder="Poste" minlength="2" maxlength="50" />
-                
-
-				<label for="user_org">
-					<i class="fas fa-user-edit"></i>
-				</label>
-				<input type="text" id="user_org" name="user_org" required autofocus size="40" placeholder="Organisation" minlength="5" maxlength="100"/>
-				
-
-				<label for="password">
-					<i class="fas fa-lock"></i>
-				</label>
-				<input type="password" name="password" placeholder="Password" id="password" required>
-
-
-				<label for="repeat_password">
-					<i class="fas fa-lock"></i>
-				</label>
-				<input type="password" name="repeat_password" placeholder="Repeat password" id="repeat_password" required>
-
-
-
-				<div class="msg">{{ msg }}</div>
-
-
-				
-				<input type="submit" value="Register">
-			</form>
-		</div>
 
 
 		<br>
 		<br>
-
-
+        <br>
+		<br>
+        <br>
 
 
 
@@ -136,7 +95,7 @@
 			<div class="copyright">
 						&copy; BOOKING. by Simplon'DATA.
 					</div>
-          	</div>
+          </div>
 
           <div class="col-md-4 col-sm-6 col-xs-12">
             <ul class="social-icons">

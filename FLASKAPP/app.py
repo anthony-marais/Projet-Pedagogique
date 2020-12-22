@@ -107,7 +107,11 @@ def logout():
    # Redirect to login page
    return redirect(url_for('login'))
 
+
+
 #**************************************************************************************CREATION DE COMPTE**********************************************************
+
+
 
 # http://localhost:5000/pythinlogin/register - this will be the registration page, we need to use both GET and POST requests
 @app.route('/register', methods=['GET', 'POST'])
@@ -198,6 +202,27 @@ def profile():
         return render_template('profile.html', account=account)
     # User is not loggedin redirect to login page
     return redirect(url_for('login'))
+
+#**************************************************************************************PAGE PROFIL POUR RESERVER**********************************************************
+
+
+# http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
+@app.route('/login/reservation',  methods=['GET', 'POST'])
+def reservation():
+    # Check if user is loggedin
+    if 'loggedin' in session:
+        
+
+        # Show the profile page with account info
+        return render_template('login_reservation.html')
+
+    # Check if "username", "password" and "email" POST requests exist (user submitted form)
+        if request.method == 'POST' and 'reservation' in request.form:
+            mail = request.form['reservation']
+            mail = str(mail)
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
+
 
 
 
