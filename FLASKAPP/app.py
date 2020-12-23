@@ -262,38 +262,62 @@ def reservation():
              #********************************** Check de la dispo de la demande de reservation***********************
 
             cursor = connection.cursor()
-            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;', (num_salle_reserv,date_reserv,debut_reserv,))
+            cursor.execute('SELECT res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart OR %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;', (num_salle_reserv,date_reserv,debut_reserv,fin_reserv))
             resa_db = cursor.fetchone()
             
+            if resa_db == None:
+                ### insert ma_contenu + reservation
+                #**********************************Si check OK insertion dans la table MAIL*********************
+                parameter_ma_contenu = mail_contenu
+                parameter_session_id = session['id']
+                cursor = connection.cursor()
+                cursor.callproc("PI_MAIL_SIMPLE", [parameter_ma_contenu,parameter_session_id,],)
+                cursor.close()
+                connection.commit()
+
+                ### recup ma_id du mail inserer dans le dernier ma_contenu de l'user
+                cursor = connection.cursor()
+                cursor.execute('SELECT ma_id FROM MAIL WHERE in_id = %s ORDER BY ma_date DESC LIMIT 1 ', (session['id'],))
+                ma_id_recup = cursor.fetchone()
+
+                ### recup le sa_id where num_salle_reserv
+                
+                cursor = connection.cursor()
+                cursor.execute('SELECT sa_id FROM SALLE WHERE sa_name = %s', (num_salle_reserv,))
+                sa_id_recup = cursor.fetchone()
 
 
 
-            # SELECT * FROM RESERVATION R
-            # INNER JOIN SALLES S ON S.sa_id=R.sa_id
-            # WHERE S.sa_name="1337" AND R.date="13-13-2020" AND 9 #BETWEEN R.res_heure_arrive AND R.res_heure_depart; ( debut_reserv)
 
-
-
-             #**********************************Si check OK insertion dans la table MAIL*********************
-
-            ## insert ma_contenu si check est ok
-            parameterIn1 = mail_contenu
-            parameterIn2 = session['id']
-
-
-
-            
-            cursor = connection.cursor()
-            cursor.callproc("PI_MAIL_SIMPLE", [parameterIn1,parameterIn2],)
-        # fetch result parameters
-            cursor.close()
-            connection.commit()
-
-
+                parameter_date_reserv = date_reserv     
+                parameter_debut_reserv = debut_reserv
+                parameter_fin_reserv = fin_reserv
+                parameter_time_reserv = time_reserv
+                parameter_id_salle = sa_id_recup                ### id salle
+                parameter_ma_id = ma_id_recup           ### ma_id
+       
              #********************************** Insertion du contenu en reservation dans RESERVATION***********************
-            msg = 'You have successfully send your reservation !'
 
-            ## insert reservation si check plus insertion ma_contenu est ok
+                cursor = connection.cursor()
+                query_insert = cursor.callproc("PI_RES_SIMPLE", [parameter_date_reserv,parameter_debut_reserv,parameter_fin_reserv,parameter_time_reserv,parameter_id_salle,parameter_ma_id,],)
+                query_insert = query_insert
+                # fetch result parameters
+                results = list(cursor.fetchall())
+                cursor.close()
+                connection.commit()
+                connection.close()
+
+                msg = 'You have successfully send your reservation !'
+            
+            else:
+                resa_db != None
+                msg = 'your reservation is invalid!'
+
+
+
+
+
+
             
     
     # Show the profile page with account info
