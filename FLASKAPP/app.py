@@ -209,19 +209,35 @@ def profile():
 # http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
 @app.route('/login/reservation',  methods=['GET', 'POST'])
 def reservation():
+
+    # Output message if something goes wrong...
+    msg = ''
     # Check if user is loggedin
     if 'loggedin' in session:
-        
 
-        # Show the profile page with account info
-        return render_template('login_reservation.html')
-
-    # Check if "username", "password" and "email" POST requests exist (user submitted form)
+        msg = ''
         if request.method == 'POST' and 'reservation' in request.form:
-            mail = request.form['reservation']
-            mail = str(mail)
+            mail_contenu = request.form['reservation']
+            mail_contenu = str(mail_contenu)
+            parameterIn1 = mail_contenu
+            parameterIn2 = session['id']
+            
+            cursor = connection.cursor()
+            cursor.callproc("PI_MAIL_SIMPLE", [parameterIn1,parameterIn2],)
+        # fetch result parameters
+            cursor.close()
+            connection.commit()
+            msg = 'You have successfully send your reservation !'
+            
+            
+    
+    # Show the profile page with account info
+        return render_template('login_reservation.html' , msg=msg)
+    else:
+        return redirect(url_for('login'))
+    
     # User is not loggedin redirect to login page
-    return redirect(url_for('login'))
+    #return redirect(url_for('login'))
 
 
 

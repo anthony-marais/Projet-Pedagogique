@@ -28,19 +28,16 @@
 		<div class="register">
 		
 			<h1>DEMANDE RESERVATION</h1>
-			
-			
-    <form method="get,post" autocomplete="off">
-    <p>  Salut, J’ai besoin de la salle 736 le 17 janvier entre 8 h et 10 h</p>
-   
+			<p>  Salut, J’ai besoin de la salle 736 le 17 janvier entre 8 h et 10 h</p>
+		<form action="{{ url_for('reservation') }}" method="post">
     <textarea rows="5" cols = "37" name="reservation" placeholder="reservation" id="reservation" required></textarea>
+    <div class="msg">{{ msg }}</div>
+       <input type="submit">
+    </form>
+    
+   
 
-    <br>
-		<br>
-        <br>
-		<br>
-        <br>
-    <input type="submit">
+    
     </form>
 </div>
 </div>
