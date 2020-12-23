@@ -15,7 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import re
 import dateparser
 import datetime
-
+import mysql.connector
 
 app = Flask(__name__)
 
@@ -35,8 +35,8 @@ with open(fichierConfig) as fichier:
 
 # assignation de de la connexion par create_engine avec les éléement de connexion + les info du fichierConfig à engine
 # en dehors de la class car cet élémeent ne change pas
-engine = create_engine('mysql+' + config["connector"] + '://' + config["user"] + ":" + config["password"] + "@" + config["host"] + ":" + config["port"] + "/" + config["bdd"], echo=False)
-connection = engine.raw_connection()
+connection = mysql.connector.connect(host=config["host"],database = config["bdd"],user=config["user"],password=config["password"])
+cursor = connection.cursor()
 #**************************************************************************************CREATION DE L'URL /...**********************************************************
 
 @app.route("/")
@@ -64,19 +64,20 @@ def login():
         # Create variables for easy access
         email = request.form['email']
         email = str(email)
+        
 
+        
 
-        cursor = connection.cursor()
         cursor.execute('SELECT in_mdp FROM INFORMATION WHERE in_mail = %s' , (email,))
         mdp = cursor.fetchone()
 
         password = request.form['password']
         password = str(password)
         if check_password_hash(mdp[0], password) == True:
-            cursor = connection.cursor()
             cursor.execute('SELECT * FROM INFORMATION WHERE in_mail = %s', (email,))
             # Fetch one record and return result
         account = cursor.fetchone()
+
             # If account exists in accounts table in out database
         if account:
             # Create session data, we can access this data in other routes
@@ -145,7 +146,6 @@ def register():
         
 
                 # Check if account exists using MySQL
-        cursor = connection.cursor()
         cursor.execute('SELECT * FROM INFORMATION WHERE in_mail = %s', (email,))
         account = cursor.fetchone()
         # If account exists show error and validation checks
@@ -167,7 +167,6 @@ def register():
 
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute('INSERT INTO INFORMATION VALUES (DEFAULT, %s, %s,%s, %s, %s,%s, %s)', (email, password, name,surname,user_poste,user_org, in_id) )
-            cursor.close()
             connection.commit()
             msg = 'You have successfully registered!'
     elif request.method == 'POST':
@@ -198,9 +197,9 @@ def profile():
     # Check if user is loggedin
     if 'loggedin' in session:
         # We need all the account info for the user so we can display it on the profile page
-        cursor = connection.cursor()
         cursor.execute('SELECT * FROM INFORMATION WHERE in_id = %s', (session['id'],))
         account = cursor.fetchone()
+        
         # Show the profile page with account info
         return render_template('profile.html', account=account)
     # User is not loggedin redirect to login page
@@ -261,8 +260,9 @@ def reservation():
             
              #********************************** Check de la dispo de la demande de reservation***********************
 
-            cursor = connection.cursor()
-            cursor.execute('SELECT res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart OR %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;', (num_salle_reserv,date_reserv,debut_reserv,fin_reserv))
+            #SELECT * FROM RESERVATION R INNER JOIN SALLES S ON S.sa_id=R.sa_id WHERE S.sa_name="1337" AND R.date="13-13-2020" AND ((10 > R.res_heure_arrive AND 10 < R.res_heure_depart) OR (11 > R.res_heure_arrive AND 11 < R.res_heure_depart));
+            ## SELECT res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart OR %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;
+            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
             resa_db = cursor.fetchone()
             
             if resa_db == None:
@@ -270,24 +270,22 @@ def reservation():
                 #**********************************Si check OK insertion dans la table MAIL*********************
                 parameter_ma_contenu = mail_contenu
                 parameter_session_id = session['id']
-                cursor = connection.cursor()
+
                 cursor.callproc("PI_MAIL_SIMPLE", [parameter_ma_contenu,parameter_session_id,],)
-                cursor.close()
                 connection.commit()
-
                 ### recup ma_id du mail inserer dans le dernier ma_contenu de l'user
-                cursor = connection.cursor()
-                cursor.execute('SELECT ma_id FROM MAIL WHERE in_id = %s ORDER BY ma_date DESC LIMIT 1 ', (session['id'],))
+                cursor.execute('SELECT ma_id FROM MAIL WHERE in_id = %s ORDER BY ma_date DESC LIMIT 1 ', (parameter_session_id,))
                 ma_id_recup = cursor.fetchone()
-
+                ma_id_recup = ma_id_recup[0]
                 ### recup le sa_id where num_salle_reserv
                 
-                cursor = connection.cursor()
                 cursor.execute('SELECT sa_id FROM SALLE WHERE sa_name = %s', (num_salle_reserv,))
                 sa_id_recup = cursor.fetchone()
+                sa_id_recup = sa_id_recup[0]
 
 
 
+                args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,]
 
                 parameter_date_reserv = date_reserv     
                 parameter_debut_reserv = debut_reserv
@@ -298,14 +296,12 @@ def reservation():
        
              #********************************** Insertion du contenu en reservation dans RESERVATION***********************
 
-                cursor = connection.cursor()
-                query_insert = cursor.callproc("PI_RES_SIMPLE", [parameter_date_reserv,parameter_debut_reserv,parameter_fin_reserv,parameter_time_reserv,parameter_id_salle,parameter_ma_id,],)
-                query_insert = query_insert
-                # fetch result parameters
-                results = list(cursor.fetchall())
-                cursor.close()
+                cursor.callproc("PI_RES_SIMPLE", (args[0],args[1],args[2],args[3],args[4],args[5],))
                 connection.commit()
-                connection.close()
+                
+                # fetch result parameters
+                
+                
 
                 msg = 'You have successfully send your reservation !'
             
