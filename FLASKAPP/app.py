@@ -12,6 +12,9 @@ import pandas as pd
 import json
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
+import dateparser
+import datetime
 
 
 app = Flask(__name__)
@@ -214,13 +217,61 @@ def reservation():
     msg = ''
     # Check if user is loggedin
     if 'loggedin' in session:
-
+        
+        # variable du message flash pour avertir l'utilisateur
         msg = ''
+        # récuperation des information du formualaire 
         if request.method == 'POST' and 'reservation' in request.form:
             mail_contenu = request.form['reservation']
             mail_contenu = str(mail_contenu)
+            
+            
+            
+            
+            motif = "[a-zA-Z]+\s(\d+)[^\d]+([\d]+)\s*([a-zA-Z]+)[^\d]+([\d]+)[^\d]+([\d]+)"
+            res_mail = re.findall(motif,mail_contenu)
+            res_mail
+            # assignation du 1 élément de la liste
+            num_salle_reserv = res_mail[0][0]
+             # assignation du 2 élément de la liste
+            day_reserv = res_mail[0][1]
+             # assignation du 3 élément de la liste
+            month_reserv = res_mail[0][2]
+             # assignation du 4 élément de la liste
+            debut_reserv = res_mail[0][3]
+             # assignation du 5 élément de la liste
+            fin_reserv = res_mail[0][4]
+             # assignation de la différence entre le 4eme et 5eme élément de la liste
+            time_reserv = fin_reserv - debut_reserv
+             # assignation du 2 et 3 eme élément de la liste et traitement pour convertir en format date
+            date_reserv = day_reserv + " " + month_reserv
+            date_reserv = dateparser.parse(date_reserv)
+            now = datetime.datetime.now()
+            if date_reserv <= now:
+                now_year = now.year + 1
+            else:
+                now.year
+            date_reserv = str(date_reserv)
+            date_reserv = date_reserv[5:10]
+            date_reserv = str(now_year) + ' ' + date_reserv
+            date_reserv = dateparser.parse(date_reserv)
+            date_reserv = date_reserv.date()
+            
+            
+            # SELECT * FROM RESERVATION R
+            # INNER JOIN SALLES S ON S.sa_id=R.sa_id
+            # WHERE S.sa_name="1337" AND R.date="13-13-2020" AND 9 #BETWEEN R.res_heure_arrive AND R.res_heure_depart; ( debut_reserv)
+
+
+
+
+
+            ## insert ma_contenu si check est ok
             parameterIn1 = mail_contenu
             parameterIn2 = session['id']
+
+
+
             
             cursor = connection.cursor()
             cursor.callproc("PI_MAIL_SIMPLE", [parameterIn1,parameterIn2],)
@@ -228,7 +279,8 @@ def reservation():
             cursor.close()
             connection.commit()
             msg = 'You have successfully send your reservation !'
-            
+
+            ## insert reservation si check plus insertion ma_contenu est ok
             
     
     # Show the profile page with account info
