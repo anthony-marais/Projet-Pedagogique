@@ -226,7 +226,7 @@ def reservation():
             mail_contenu = str(mail_contenu)
             
             
-            
+            #********************************** Traitement du mail en reservation***********************
             
             motif = "[a-zA-Z]+\s(\d+)[^\d]+([\d]+)\s*([a-zA-Z]+)[^\d]+([\d]+)[^\d]+([\d]+)"
             res_mail = re.findall(motif,mail_contenu)
@@ -239,8 +239,10 @@ def reservation():
             month_reserv = res_mail[0][2]
              # assignation du 4 élément de la liste
             debut_reserv = res_mail[0][3]
+            debut_reserv = int(debut_reserv)
              # assignation du 5 élément de la liste
             fin_reserv = res_mail[0][4]
+            fin_reserv = int(fin_reserv)
              # assignation de la différence entre le 4eme et 5eme élément de la liste
             time_reserv = fin_reserv - debut_reserv
              # assignation du 2 et 3 eme élément de la liste et traitement pour convertir en format date
@@ -257,14 +259,22 @@ def reservation():
             date_reserv = dateparser.parse(date_reserv)
             date_reserv = date_reserv.date()
             
+             #********************************** Check de la dispo de la demande de reservation***********************
+
+            cursor = connection.cursor()
+            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;', (num_salle_reserv,date_reserv,debut_reserv,))
+            resa_db = cursor.fetchone()
             
+
+
+
             # SELECT * FROM RESERVATION R
             # INNER JOIN SALLES S ON S.sa_id=R.sa_id
             # WHERE S.sa_name="1337" AND R.date="13-13-2020" AND 9 #BETWEEN R.res_heure_arrive AND R.res_heure_depart; ( debut_reserv)
 
 
 
-
+             #**********************************Si check OK insertion dans la table MAIL*********************
 
             ## insert ma_contenu si check est ok
             parameterIn1 = mail_contenu
@@ -278,6 +288,9 @@ def reservation():
         # fetch result parameters
             cursor.close()
             connection.commit()
+
+
+             #********************************** Insertion du contenu en reservation dans RESERVATION***********************
             msg = 'You have successfully send your reservation !'
 
             ## insert reservation si check plus insertion ma_contenu est ok
