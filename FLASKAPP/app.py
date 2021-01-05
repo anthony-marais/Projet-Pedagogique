@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # import de re pour traiter le mail 
 import re
 # import de dateparser et datetime pour determiner la date demander du mail
+## pip install dateparser
 import dateparser
 import datetime
 # connector de python à mysql
@@ -247,9 +248,16 @@ def reservation():
              # assignation du 4 élément de la liste
             debut_reserv = res_mail[0][3]      # le quatrieme élément de la premiere liste correspond au l'heure de debut demander est donc stocker dans "debut_reserv"
             debut_reserv = int(debut_reserv)    # debut_reserv est converti en entier avec int()
-             # assignation du 5 élément de la liste
+            
+            
+
+
+
+            # assignation du 5 élément de la liste
             fin_reserv = res_mail[0][4]     # le cinquièeme élément de la premiere liste correspond au l'heure de fin demander est donc stocker dans "fin_reserv"
-            fin_reserv = int(fin_reserv)        # fin_reserv est converti en entier avec int()
+            fin_reserv = int(fin_reserv)       # fin_reserv est converti en entier avec int()
+            
+
              # assignation de la différence entre le 4eme et 5eme élément de la liste
             time_reserv = fin_reserv - debut_reserv # time_reserv est la différence entre l'heure de fin et de début 
              # assignation du 2 et 3 eme élément de la liste et traitement pour convertir en format date
@@ -259,17 +267,26 @@ def reservation():
             if date_reserv <= now:          ## si la date_reserv est inférieur à now
                 now_year = now.year + 1     ## alors on ajoute +1 à l'année de now et on le stocke dans la variable now_year
             else:                           ## sinon 
-                now.year                    ## now.year ne change pas 
+                now_year = now.year                    ## now.year ne change pas 
             date_reserv = str(date_reserv)  ## on convertie date_reserv en chaine de caractere avec str()
             date_reserv = date_reserv[5:10] ## on selectionne du 5eme au 9eme élément de la date 12-12 toujours stocker dans date_reserv
             date_reserv = str(now_year) + ' ' + date_reserv  # on convertie now_year en chaine de caractere avec str() et on l'additionne " " et plus la date_reserv pour avoir ce resultat 2020 12-12
             date_reserv = dateparser.parse(date_reserv) ## on transforme notre date_reserv en DATETIME
             date_reserv = date_reserv.date()    ## ON CONVERTI date_reserv en format DATE
             
-             #********************************** Check de la dispo de la demande de reservation***********************
+            if debut_reserv in range(0,25) and fin_reserv in range(0,25): ## condition si l'heure de debut et de fin est comprise entre 0 et 24
+                debut_reserv = debut_reserv ## l'heure debut est ok
+                fin_reserv = fin_reserv     ## l'heure fin est ok
+            else:
+                debut_reserv = False        ## l'heure debut n'est pas bonne 
+                fin_reserv = False          ## l'heure fin n'est pas bonne
+                
+                
+
+            #********************************** Check de la dispo de la demande de reservation***********************
 
             #SELECT * FROM RESERVATION R INNER JOIN SALLES S ON S.sa_id=R.sa_id WHERE S.sa_name="1337" AND R.date="13-13-2020" AND ((10 > R.res_heure_arrive AND 10 < R.res_heure_depart) OR (11 > R.res_heure_arrive AND 11 < R.res_heure_depart));
-            ## SELECT res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND %s BETWEEN R.res_heure_arrive AND R.res_heure_depart OR %s BETWEEN R.res_heure_arrive AND R.res_heure_depart;
+            ##  
             
             
             
@@ -277,7 +294,7 @@ def reservation():
             cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
             resa_db = cursor.fetchone()    ## ON STOCKE LE RESULTAT DE LA REQUETE DANS la variable "resa_db"
             
-            if resa_db == None:  ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE ALORS 
+            if resa_db == None and debut_reserv != False and fin_reserv != False:  ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE et que les heure debut/fin son valide ALORS 
                 ### insert ma_contenu + reservation
                 #**********************************Si check OK insertion dans la table MAIL*********************
                 parameter_ma_contenu = mail_contenu ## on initialise le mail_contenu dans la variable "parameter_ma_contenu"
@@ -306,6 +323,9 @@ def reservation():
                 #parameter_id_salle = sa_id_recup                ### id salle
                 #parameter_ma_id = ma_id_recup           ### ma_id
        
+
+
+
              #********************************** Insertion du contenu en reservation dans RESERVATION***********************
                 args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,] ### ASSIGNATION DANS "args" LISTE DES ARGUMENT D'ENTRER DANS LA PROCEDURE SOTCKE POUR INSERER LA RESERVATION
                 cursor.callproc("PI_RES_SIMPLE", (args[0],args[1],args[2],args[3],args[4],args[5],))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
@@ -318,9 +338,11 @@ def reservation():
                 msg = 'You have successfully send your reservation !'       ## ON AVERTIE L'USER qu'il a bien envoyer sa reservation 
             
             else:
-                resa_db != None             ## SI LE RESULTAT DE LA REQUETE  ##  QUI CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
-                                            ## N'EST PAS EGALE A NONE CELA SIGNIFI QU'IL Y AS DES CORRESPONDANCE 
+                resa_db != None and debut_reserv == False and fin_reserv == False   ## SI LE RESULTAT DE LA REQUETE  ##  QUI CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
+                                    ## N'EST PAS EGALE A NONE CELA SIGNIFI QU'IL Y AS DES CORRESPONDANCE 
                                             ## ALORS LA RESERVATION N'EST PAS VALIDE
+                ################  rajouter des if else pour si resa_db != None msg else ............
+                
                 msg = 'your reservation is invalid!'
 
 
