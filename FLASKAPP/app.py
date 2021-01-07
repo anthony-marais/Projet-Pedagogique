@@ -228,8 +228,10 @@ def reservation():
         
         # variable du message flash pour avertir l'utilisateur
         msg = ''
+        result = ''
         # récuperation des information du formualaire 
-        if request.method == 'POST' and 'reservation' in request.form:      ## ON RECUPERER LE message de reservation dans le formulaire 
+        if request.method == 'POST' and 'reservation' in request.form: 
+            print(1)      ## ON RECUPERER LE message de reservation dans le formulaire 
             mail_contenu = request.form['reservation']  ## on stocke la reservation dans "mail_contenu"
             mail_contenu = str(mail_contenu)       ## on converti "mail_contenu" en chaine de caractere avec str()
             
@@ -291,12 +293,59 @@ def reservation():
             
             
             ## ON CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
-            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
-            resa_db = cursor.fetchone()    ## ON STOCKE LE RESULTAT DE LA REQUETE DANS la variable "resa_db"
+            ## ON STOCKE LE RESULTAT DE LA REQUETE DANS la variable "resa_db"
             
-            if resa_db == None and debut_reserv != False and fin_reserv != False:  ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE et que les heure debut/fin son valide ALORS 
-                ### insert ma_contenu + reservation
-                #**********************************Si check OK insertion dans la table MAIL*********************
+            ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE et que les heure debut/fin son valide ALORS 
+                
+
+            cursor.execute('SELECT res_id, res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND(( %s BETWEEN R.res_heure_arrive AND R.res_heure_depart ) OR (%s BETWEEN R.res_heure_arrive AND R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,fin_reserv))
+
+            resa_db_1 = cursor.fetchone()
+
+            #print(resa_db_1)
+
+            if resa_db_1 == None:
+                result = True#,"TESTING OK FIRST"
+                print(result)
+
+###################################################### TEST DU SI L'HEURE  DE DEBUT DEMANDER CORRESPOND A UNE HEURE DE FIN DEJA EXISTANTE#####################
+            elif resa_db_1 != None and debut_reserv == resa_db_1[3]:
+                cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s >= R.res_heure_arrive AND %s <= R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
+                result_fin_to_debut_reserv = cursor.fetchone()
+    
+                if result_fin_to_debut_reserv == None and resa_db_1 != None:
+                    result = True#,"TESTING IS OK 1"
+                    print(result)
+    
+
+
+########################################################### TEST DU SI L'HEURE DE FIN DEMANDER CORRESPOND A UNE HEURE DE DEBUT DEJA EXISTANTE#################
+
+            elif resa_db_1 != None and fin_reserv == resa_db_1[2]:
+                cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s >= R.res_heure_arrive AND %s <= R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
+                result_debut_to_fin_reserv = cursor.fetchone()
+    
+                if result_debut_to_fin_reserv == None and resa_db_1 != None:
+                    result = True#,"TESTING IS OK 2"
+                    print(result)
+
+
+            else:
+                #result_fin_to_debut_reserv != None and resa_db_1 != None or result_debut_to_fin_reserv != None and resa_db_1 != None
+                result = False#,"TESTING NOT OK 1"
+                print(result)
+
+
+
+                    
+
+
+
+
+
+            if result == True:             
+            ### insert ma_contenu + reservation
+            #**********************************Si check OK insertion dans la table MAIL*********************
                 parameter_ma_contenu = mail_contenu ## on initialise le mail_contenu dans la variable "parameter_ma_contenu"
                 parameter_session_id = session['id'] ## on initialise le session['id'] qui est l'id de la session en cours dans la variable "parameter_session_id"
 
@@ -315,17 +364,6 @@ def reservation():
                 sa_id_recup = sa_id_recup[0]    # sa_id_recup est initialise avec son premier élément de sa liste
 
 
-########################################################
-                #parameter_date_reserv = date_reserv     
-                #parameter_debut_reserv = debut_reserv
-                #parameter_fin_reserv = fin_reserv
-                #parameter_time_reserv = time_reserv
-                #parameter_id_salle = sa_id_recup                ### id salle
-                #parameter_ma_id = ma_id_recup           ### ma_id
-       
-
-
-
              #********************************** Insertion du contenu en reservation dans RESERVATION***********************
                 args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,] ### ASSIGNATION DANS "args" LISTE DES ARGUMENT D'ENTRER DANS LA PROCEDURE SOTCKE POUR INSERER LA RESERVATION
                 cursor.callproc("PI_RES_SIMPLE", (args[0],args[1],args[2],args[3],args[4],args[5],))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
@@ -336,15 +374,11 @@ def reservation():
                 
 
                 msg = 'You have successfully send your reservation !'       ## ON AVERTIE L'USER qu'il a bien envoyer sa reservation 
-            
-            else:
-                resa_db != None and debut_reserv == False and fin_reserv == False   ## SI LE RESULTAT DE LA REQUETE  ##  QUI CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
-                                    ## N'EST PAS EGALE A NONE CELA SIGNIFI QU'IL Y AS DES CORRESPONDANCE 
-                                            ## ALORS LA RESERVATION N'EST PAS VALIDE
-                ################  rajouter des if else pour si resa_db != None msg else ............
-                
-                msg = 'your reservation is invalid!'
+                print(msg)
 
+            else:
+                msg = 'your reservation is invalid!'
+                print(msg)
 
 
 
