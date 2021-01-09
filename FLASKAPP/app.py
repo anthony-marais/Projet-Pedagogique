@@ -229,6 +229,7 @@ def reservation():
         # variable du message flash pour avertir l'utilisateur
         msg = ''
         result = ''
+        salle_valide = ''
         # récuperation des information du formualaire 
         if request.method == 'POST' and 'reservation' in request.form: 
             print(1)      ## ON RECUPERER LE message de reservation dans le formulaire 
@@ -238,65 +239,84 @@ def reservation():
             
             #********************************** Traitement du mail en reservation***********************
             
-            motif = "[a-zA-Z]+\s(\d+)[^\d]+([\d]+)\s*([a-zA-Z]+)[^\d]+([\d]+)[^\d]+([\d]+)" ## création du motif qui va être utiliser pour chercher les informations dans "mail_contenu"
-            res_mail = re.findall(motif,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
-            res_mail    
-            # assignation du 1 élément de la liste
-            num_salle_reserv = res_mail[0][0] # le premiere élément de la premiere liste correspond au nom de la salle est donc stocker dans "num_salle_reserv"
-             # assignation du 2 élément de la liste
-            day_reserv = res_mail[0][1]     # le deuxieme élément de la premiere liste correspond au jour demander est donc stocker dans "day_reserv"
-             # assignation du 3 élément de la liste
-            month_reserv = res_mail[0][2]   # le troisieme élément de la premiere liste correspond au mois demander est donc stocker dans "month_reserv"
-             # assignation du 4 élément de la liste
-            debut_reserv = res_mail[0][3]      # le quatrieme élément de la premiere liste correspond au l'heure de debut demander est donc stocker dans "debut_reserv"
-            debut_reserv = int(debut_reserv)    # debut_reserv est converti en entier avec int()
-            
-            
+
+            ####################################################### Motif pour la Salle ##########################################
+            motif_salle = "(?:salle+\s+\d+)|(?:Salle+\s+\d+)"
+
+            ####################################################### Motif pour la Date ##########################################
+
+            motif_date = "(?:\d+\s+janvier)|(?:\d+\s+fevrier)|(?:\d+\s+mars)|(?:\d+\s+avril)|(?:\d+\s+mai)|(?:\d+\s+juin)|(?:\d+\s+juillet)|(?:\d+\s+août)|(?:\d+\s+septembre)|(?:\d+\s+octobre)|(?:\d+\s+novembre)|(?:\d+\s+decembre)|(?:\d+\s+Janvier)|(?:\d+\s+Fevrier)|(?:\d+\s+Mars)|(?:\d+\s+Avril)|(?:\d+\s+Mai)|(?:\d+\s+Juin)|(?:\d+\s+Juillet)|(?:\d+\s+Août)|(?:\d+\s+Septembre)|(?:\d+\s+Octobre)|(?:\d+\s+Novembre)|(?:\d+\s+Decembre)|(?:\d+\s+January)|(?:\d+\s+February)|(?:\d+\s+March)|(?:\d+\s+April)|(?:\d+\s+May)|(?:\d+\s+June)|(?:\d+\s+July)|(?:\d+\s+Augut)|(?:\d+\s+September)|(?:\d+\s+October)|(?:\d+\s+November)|(?:\d+\s+December)|(?:\d+\s+january)|(?:\d+\s+february)|(?:\d+\s+march)|(?:\d+\s+april)|(?:\d+\s+Mai)|(?:\d+\s+june)|(?:\d+\s+july)|(?:\d+\s+august)|(?:\d+\s+september)|(?:\d+\s+october)|(?:\d+\s+november)|(?:\d+\s+december)"  #### (?:\d+.\d+) 12/03 pour la date format numérique
+
+            ####################################################### Motif pour les horraire ##########################################
+
+            motif_horraire = "(?:\d+.Heures)|(?:\d+.Heure)|(?:\d+.heures)|(?:\d+.heure)|(?:\d+.h)|(?:\d+.H)" #informations dans "mail_contenu"
+
+            ####################################################### Salle reserver ##########################################
 
 
+            res_mail_salle = re.findall(motif_salle,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
+            num_salle_reserv = str(res_mail_salle[0])
+            num_salle_reserv = str(num_salle_reserv)
 
-            # assignation du 5 élément de la liste
-            fin_reserv = res_mail[0][4]     # le cinquièeme élément de la premiere liste correspond au l'heure de fin demander est donc stocker dans "fin_reserv"
-            fin_reserv = int(fin_reserv)       # fin_reserv est converti en entier avec int()
-            
+            ####################################################### Date reserver ##########################################
 
-             # assignation de la différence entre le 4eme et 5eme élément de la liste
-            time_reserv = fin_reserv - debut_reserv # time_reserv est la différence entre l'heure de fin et de début 
-             # assignation du 2 et 3 eme élément de la liste et traitement pour convertir en format date
-            date_reserv = day_reserv + " " + month_reserv   # date_reserv correspon au jour + mois en format texte
-            date_reserv = dateparser.parse(date_reserv)  ## on converti date_reserv dans un format DATETIME
-            now = datetime.datetime.now()   ## ON INITALISE now à la valeur de l'instant T quand est éxecuter le code
-            if date_reserv <= now:          ## si la date_reserv est inférieur à now
-                now_year = now.year + 1     ## alors on ajoute +1 à l'année de now et on le stocke dans la variable now_year
-            else:                           ## sinon 
-                now_year = now.year                    ## now.year ne change pas 
-            date_reserv = str(date_reserv)  ## on convertie date_reserv en chaine de caractere avec str()
-            date_reserv = date_reserv[5:10] ## on selectionne du 5eme au 9eme élément de la date 12-12 toujours stocker dans date_reserv
-            date_reserv = str(now_year) + ' ' + date_reserv  # on convertie now_year en chaine de caractere avec str() et on l'additionne " " et plus la date_reserv pour avoir ce resultat 2020 12-12
-            date_reserv = dateparser.parse(date_reserv) ## on transforme notre date_reserv en DATETIME
-            date_reserv = date_reserv.date()    ## ON CONVERTI date_reserv en format DATE
+            res_mail_date = re.findall(motif_date,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
+
+            date_reserv = str(res_mail_date[0])
+            date_reserv = str(date_reserv)
+
+            ####################################################### HEURE reserver ##########################################
+
+
+            res_mail_horraire = re.findall(motif_horraire,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
+            res_mail_horraire
+            debut_reserv = res_mail_horraire[0][0:2]
+            debut_reserv = int(debut_reserv)
+
+            fin_reserv = res_mail_horraire[1][0:2]
+            fin_reserv = int(fin_reserv)   
+            time_reserv = fin_reserv - debut_reserv 
+
+   
+            date_reserv = dateparser.parse(date_reserv)  
+            now = datetime.datetime.now()   
+            if date_reserv <= now:
+                now_year = now.year + 1     
+            else:                           
+                now_year = now.year                   
+            date_reserv = str(date_reserv)  
+            date_reserv = date_reserv[5:10] 
+            date_reserv = str(now_year) + ' ' + date_reserv  
+            date_reserv = dateparser.parse(date_reserv)
+            date_reserv = date_reserv.date()   
             
-            if debut_reserv in range(0,25) and fin_reserv in range(0,25): ## condition si l'heure de debut et de fin est comprise entre 0 et 24
-                debut_reserv = debut_reserv ## l'heure debut est ok
-                fin_reserv = fin_reserv     ## l'heure fin est ok
+            if debut_reserv in range(0,25) and fin_reserv in range(0,25): 
+                debut_reserv = debut_reserv 
+                fin_reserv = fin_reserv     
             else:
-                debut_reserv = False        ## l'heure debut n'est pas bonne 
+                debut_reserv = False        
                 fin_reserv = False          ## l'heure fin n'est pas bonne
                 
                 
 
             #********************************** Check de la dispo de la demande de reservation***********************
-
-            #SELECT * FROM RESERVATION R INNER JOIN SALLES S ON S.sa_id=R.sa_id WHERE S.sa_name="1337" AND R.date="13-13-2020" AND ((10 > R.res_heure_arrive AND 10 < R.res_heure_depart) OR (11 > R.res_heure_arrive AND 11 < R.res_heure_depart));
-            ##  
             
-            
+            cursor.execute('SELECT sa_name FROM SALLE WHERE sa_name LIKE %s;', (num_salle_reserv,))
+            resa_db_salle = cursor.fetchone()
+            if resa_db_salle == None:
+                salle_valide = False
+                msg = "Salle non valide"
+                print('None',msg)
+            else:
+                msg = "Salle valide"
+                salle_valide = True
+                print("Il y as une salle")
             
             ## ON CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
             ## ON STOCKE LE RESULTAT DE LA REQUETE DANS la variable "resa_db"
             
             ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE et que les heure debut/fin son valide ALORS 
-                
+            
 
             cursor.execute('SELECT res_id, res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND(( %s BETWEEN R.res_heure_arrive AND R.res_heure_depart ) OR (%s BETWEEN R.res_heure_arrive AND R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,fin_reserv))
 
@@ -343,7 +363,7 @@ def reservation():
 
 
 
-            if result == True:             
+            if result == True and salle_valide == True:             
             ### insert ma_contenu + reservation
             #**********************************Si check OK insertion dans la table MAIL*********************
                 parameter_ma_contenu = mail_contenu ## on initialise le mail_contenu dans la variable "parameter_ma_contenu"
@@ -361,12 +381,20 @@ def reservation():
                 ### recup le sa_id where num_salle_reserv
                 cursor.execute('SELECT sa_id FROM SALLE WHERE sa_name = %s', (num_salle_reserv,)) ## ON REQUETE LA DATABASE POUR RECUPER L'ID DE LA SALLE DEMANDER PAR LE NOM DE LA SALLE
                 sa_id_recup = cursor.fetchone() # on stocke le resultat de la requete dans "sa_id_recup"
-                sa_id_recup = sa_id_recup[0]    # sa_id_recup est initialise avec son premier élément de sa liste
+                sa_id_recup = str(sa_id_recup[0])    # sa_id_recup est initialise avec son premier élément de sa liste
+
 
 
              #********************************** Insertion du contenu en reservation dans RESERVATION***********************
-                args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,] ### ASSIGNATION DANS "args" LISTE DES ARGUMENT D'ENTRER DANS LA PROCEDURE SOTCKE POUR INSERER LA RESERVATION
-                cursor.callproc("PI_RES_SIMPLE", (args[0],args[1],args[2],args[3],args[4],args[5],))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
+                args1 = date_reserv
+                args2 = debut_reserv
+                args3 = fin_reserv
+                args4 = time_reserv
+                args5 = sa_id_recup
+                args6 = ma_id_recup
+                
+                #args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,] ### ASSIGNATION DANS "args" LISTE DES ARGUMENT D'ENTRER DANS LA PROCEDURE SOTCKE POUR INSERER LA RESERVATION
+                cursor.callproc("PI_RES_SIMPLE", (args1,args2,args3,args4,args5,args6,))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
                 connection.commit()     ## ON VALIDE L'INSERTION
                 
                 # fetch result parameters
@@ -377,7 +405,7 @@ def reservation():
                 print(msg)
 
             else:
-                msg = 'your reservation is invalid!'
+                msg = 'your reservation is invalid!' ### AJOUTER CONDITION IF AND ELSE TEST POUR LE MSG SOIT DIFFERENT
                 print(msg)
 
 

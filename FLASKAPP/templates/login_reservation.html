@@ -30,7 +30,7 @@
 			<h1>DEMANDE RESERVATION</h1>
 			<p>  Salut, J’ai besoin de la salle 736 le 17 janvier entre 8 h et 10 h</p>
 		<form action="{{ url_for('reservation') }}" method="post">
-    <textarea rows="5" cols = "37" name="reservation" placeholder="reservation" id="reservation" required></textarea>
+    <textarea rows="5" cols = "37" name="reservation" placeholder="reservation" id="reservation" minlength="25" maxlength="100" required></textarea>
     <div class="msg">{{ msg }}</div>
        <input type="submit">
     </form>
