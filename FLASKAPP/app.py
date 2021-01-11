@@ -42,7 +42,7 @@ with open(fichierConfig) as fichier:
 # assignation de de la connexion par create_engine avec les éléement de connexion + les info du fichierConfig à engine
 # en dehors de la class car cet élémeent ne change pas
 connection = mysql.connector.connect(host=config["host"],database = config["bdd"],user=config["user"],password=config["password"])
-cursor = connection.cursor()
+cursor = connection.cursor(buffered=True)
 
 
 ##################################################################################### CREATION DE L'URL /... ######################################################################################
@@ -93,6 +93,7 @@ def login():
             session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
             session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
             session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
+            session['role'] = account[7]
             # Redirect to home page
             return redirect(url_for('home'))
         
@@ -101,6 +102,8 @@ def login():
             session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
             session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
             session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
+            session['role'] = account[7]
+
             # Redirect to home page
             return redirect(url_for('home_admin'))
                     ## vu que l'utilisateur est bien connecté on le redirige vers la route 
@@ -193,7 +196,26 @@ def register():
     # Show registration form with message (if any)
     return render_template('register.html', msg=msg)     ## ON AFFICHE LE TEMPLATE REGISTER "register.html" avec les "msg" 
 
+##################################################################################### CREATION DE L'URL /... ######################################################################################
+@app.route("/profile")    ### création de la route "/"
+def profile_check():
+    if 'loggedin' in session:
+     ## ON VERIFIE QUE L'USER SOIT BIEN CONNECTER
+        
+        cursor.execute('SELECT role_id FROM INFORMATION WHERE in_id = %s', (session['id'],))  ## S'IL EST BIEN CONNECTER ON EFFECTUE une REQUETE POUR AFFICHER LES INFORMATION SOUHAITER
+        
+        role = cursor.fetchone()
+        
+        role = role[0]
 
+        if session['role'] == 1:
+               # si le compte est bien un ADMIN
+            return redirect("/admin/profile") ### redirection de la route "/" vers "/home"
+    
+        elif session['role'] == 2:      # si le compte est bien un USER
+            return redirect("/login/profile")
+
+    return redirect(url_for('login'))
 
 ########################################################################################## ACCEUIL ADMIN ##########################################################################################
 
@@ -282,15 +304,15 @@ def reservation():
             
 
             ####################################################### Motif pour la Salle ##########################################
-            motif_salle = "(?:salle+\s+\d+)|(?:Salle+\s+\d+)"
+            motif_salle = (r"(?:salle+\s+\d+)|(?:Salle+\s+\d+)")
 
             ####################################################### Motif pour la Date ##########################################
 
-            motif_date = "(?:\d+\s+janvier)|(?:\d+\s+fevrier)|(?:\d+\s+mars)|(?:\d+\s+avril)|(?:\d+\s+mai)|(?:\d+\s+juin)|(?:\d+\s+juillet)|(?:\d+\s+août)|(?:\d+\s+septembre)|(?:\d+\s+octobre)|(?:\d+\s+novembre)|(?:\d+\s+decembre)|(?:\d+\s+Janvier)|(?:\d+\s+Fevrier)|(?:\d+\s+Mars)|(?:\d+\s+Avril)|(?:\d+\s+Mai)|(?:\d+\s+Juin)|(?:\d+\s+Juillet)|(?:\d+\s+Août)|(?:\d+\s+Septembre)|(?:\d+\s+Octobre)|(?:\d+\s+Novembre)|(?:\d+\s+Decembre)|(?:\d+\s+January)|(?:\d+\s+February)|(?:\d+\s+March)|(?:\d+\s+April)|(?:\d+\s+May)|(?:\d+\s+June)|(?:\d+\s+July)|(?:\d+\s+Augut)|(?:\d+\s+September)|(?:\d+\s+October)|(?:\d+\s+November)|(?:\d+\s+December)|(?:\d+\s+january)|(?:\d+\s+february)|(?:\d+\s+march)|(?:\d+\s+april)|(?:\d+\s+Mai)|(?:\d+\s+june)|(?:\d+\s+july)|(?:\d+\s+august)|(?:\d+\s+september)|(?:\d+\s+october)|(?:\d+\s+november)|(?:\d+\s+december)"  #### (?:\d+.\d+) 12/03 pour la date format numérique
+            motif_date = (r"(?:\d+\s+janvier)|(?:\d+\s+fevrier)|(?:\d+\s+mars)|(?:\d+\s+avril)|(?:\d+\s+mai)|(?:\d+\s+juin)|(?:\d+\s+juillet)|(?:\d+\s+août)|(?:\d+\s+septembre)|(?:\d+\s+octobre)|(?:\d+\s+novembre)|(?:\d+\s+decembre)|(?:\d+\s+Janvier)|(?:\d+\s+Fevrier)|(?:\d+\s+Mars)|(?:\d+\s+Avril)|(?:\d+\s+Mai)|(?:\d+\s+Juin)|(?:\d+\s+Juillet)|(?:\d+\s+Août)|(?:\d+\s+Septembre)|(?:\d+\s+Octobre)|(?:\d+\s+Novembre)|(?:\d+\s+Decembre)|(?:\d+\s+January)|(?:\d+\s+February)|(?:\d+\s+March)|(?:\d+\s+April)|(?:\d+\s+May)|(?:\d+\s+June)|(?:\d+\s+July)|(?:\d+\s+Augut)|(?:\d+\s+September)|(?:\d+\s+October)|(?:\d+\s+November)|(?:\d+\s+December)|(?:\d+\s+january)|(?:\d+\s+february)|(?:\d+\s+march)|(?:\d+\s+april)|(?:\d+\s+Mai)|(?:\d+\s+june)|(?:\d+\s+july)|(?:\d+\s+august)|(?:\d+\s+september)|(?:\d+\s+october)|(?:\d+\s+november)|(?:\d+\s+december)")  #### (?:\d+.\d+) 12/03 pour la date format numérique
 
             ####################################################### Motif pour les horraire ##########################################
 
-            motif_horraire = "(?:\d+.Heures)|(?:\d+.Heure)|(?:\d+.heures)|(?:\d+.heure)|(?:\d+.h)|(?:\d+.H)" #informations dans "mail_contenu"
+            motif_horraire = (r"(?:\d+.Heures)|(?:\d+.Heure)|(?:\d+.heures)|(?:\d+.heure)|(?:\d+.h)|(?:\d+.H)") #informations dans "mail_contenu"
 
             ####################################################### Salle reserver ##########################################
 
@@ -342,8 +364,13 @@ def reservation():
 
             #********************************** Check de la dispo de la demande de reservation***********************
             
-            cursor.execute('SELECT sa_name FROM SALLE WHERE sa_name LIKE %s;', (num_salle_reserv,))
-            resa_db_salle = cursor.fetchone()
+
+
+
+            resa_db_salle = cursor.callproc('PSGetSALLEbyNAME',(num_salle_reserv,))[0]
+            #resa_db_salle = cursor.execute('SELECT * FROM SALLE WHERE sa_name = %s',(num_salle_reserv,))
+            
+
             if resa_db_salle == None:
                 salle_valide = False
                 msg = "Salle non valide"
