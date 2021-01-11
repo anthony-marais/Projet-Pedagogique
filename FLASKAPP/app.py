@@ -1,5 +1,4 @@
-#**************************************************************************************IMPORT DES LIBRAIRIE**********************************************************
-
+################################################################################# IMPORT DES LIBRAIRIE ############################################################################################
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -20,18 +19,18 @@ import datetime
 # connector de python à mysql
 import mysql.connector
 
-#**************************************************************************************INITIALISATION DE LA FLASK APP**********************************************************
+########################################################################################### INITIALISATION DE LA FLASK APP ############################################################################""
 
 
 app = Flask(__name__)
 
-#**************************************************************************************SECRET KEY AJOUT DE SECURITE**********************************************************
+############################################################################################ SECRET KEY AJOUT DE SECURITE #########################################################################""
 
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = 'your secret key'
 
 
-#**************************************************************************************CREATION DE LA CONNEXION SQLALCHEMY**********************************************************
+########################################################################################### CREATION DE LA CONNEXION SQLALCHEMY #####################################################################
 
 ## IMPORT DU CONFIG.JSON
 # assignation de la config.json à fichierConfig
@@ -44,13 +43,14 @@ with open(fichierConfig) as fichier:
 # en dehors de la class car cet élémeent ne change pas
 connection = mysql.connector.connect(host=config["host"],database = config["bdd"],user=config["user"],password=config["password"])
 cursor = connection.cursor()
-#**************************************************************************************CREATION DE L'URL /...**********************************************************
 
+
+##################################################################################### CREATION DE L'URL /... ######################################################################################
 @app.route("/")    ### création de la route "/"
 def starting_url():
     return redirect("/home") ### redirection de la route "/" vers "/home"
 
-#**************************************************************************************REDIRECTION DE L'ULR /... à /home  **********************************************************
+###################################################################################### REDIRECTION DE L'ULR /... à /home ###########################################################################
 
 
 
@@ -60,7 +60,7 @@ def acceuil():
     return render_template('index_booking.html') ## AFFICHAGE DU TEMPLATE DE LA PAGE D'ACCEUIL "index_booking.html"
 
 
-#**************************************************************************************CONNEXION**********************************************************
+######################################################################################" CONNEXION ##################################################################################################
 
 @app.route('/login', methods=['GET', 'POST'])   # création de la route "/login" avec pour méthode GET & POST
 def login():
@@ -86,7 +86,7 @@ def login():
         account = cursor.fetchone()         # assignation de toutes les information de la requete dans account sous forme de liste
 
             # If account exists in accounts table in out database
-        if account:         # création de la session
+        if account and account[7] == 2:         # création de la session si le compte est bien un USER
             # Create session data, we can access this data in other routes
 
 
@@ -94,7 +94,16 @@ def login():
             session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
             session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
             # Redirect to home page
-            return redirect(url_for('home'))        ## vu que l'utilisateur est bien connecté on le redirige vers la route 
+            return redirect(url_for('home'))
+        
+        elif account and account[7] == 1:   # création de la session si le compte est bien un ADMIN
+            
+            session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
+            session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
+            session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
+            # Redirect to home page
+            return redirect(url_for('home_admin'))
+                    ## vu que l'utilisateur est bien connecté on le redirige vers la route 
         else:        # si l'utilisateur n'existe pas OU si il tape une mauvaise adresse mail OU mot de passe ALORS  
             # Account doesnt exist or username/password incorrect
             msg = 'Incorrect username/password!'    # On lui affiche le message d'erreur
@@ -104,7 +113,7 @@ def login():
 
 
 
-#**************************************************************************************DECONNEXION**********************************************************
+##################################################################################################### DECONNEXION ##################################################################################
 
 
 
@@ -121,7 +130,7 @@ def logout():
 
 
 
-#**************************************************************************************CREATION DE COMPTE**********************************************************
+############################################################################################# CREATION DE COMPTE ##################################################################################
 
 
 
@@ -185,7 +194,38 @@ def register():
     return render_template('register.html', msg=msg)     ## ON AFFICHE LE TEMPLATE REGISTER "register.html" avec les "msg" 
 
 
-#**************************************************************************************ACCEUIL USER**********************************************************
+
+########################################################################################## ACCEUIL ADMIN ##########################################################################################
+
+# http://localhost:5000/pythinlogin/home - this will be the home page, only accessible for loggedin users
+@app.route('/admin/home')           ## CREATION DE LA ROUTE "/login/home" QUI EST L'ACCEUIL USER
+def home_admin():         
+    # Check if user is loggedin
+    if 'loggedin' in session:       ## ON VERIFIE QUE L'USER SOIT BIEN CONNECTER 
+        # User is loggedin show them the home page
+        return render_template('home_admin.html', mail=session['email'])  ## S'IL EST BIEN CONNECTER ON LUI AFFICHE LE TEMPLATE home.html avec un message d'acceuil contenant son email
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))   ## SI L'USER N'EST PAS CONNECTER ON LE REDIRIGE VERS LA ROUTE 'login' POUR QU'IL SE CONNECTE
+
+
+######################################################################################## PAGE PROFIL ADMIN ########################################################################################
+
+# http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
+@app.route('/admin/profile')        ## CREATION DE LA ROUTE "/login/profile" QUI EST LA PAGE DE PROFIL DE L'USER
+def profile_admin():
+    # Check if user is loggedin
+    if 'loggedin' in session:       ## ON VERIFIE QUE L'USER SOIT BIEN CONNECTER
+        # We need all the account info for the user so we can display it on the profile page
+        cursor.execute('SELECT * FROM INFORMATION WHERE in_id = %s', (session['id'],))  ## S'IL EST BIEN CONNECTER ON EFFECTUE une REQUETE POUR AFFICHER LES INFORMATION SOUHAITER
+        account = cursor.fetchone() ## ON STOCKE le resultat de la requete dans la variable account
+        
+        # Show the profile page with account info
+        return render_template('profile_admin.html', account=account) ## ON AFFICHE LA PAGE profile avec le template "profile.html"
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))       ## SI L'USER N'EST PAS CONNECTER ON LE REDIRIGE VERS LA PAGE DE CONNECION "login"
+
+########################################################################################## ACCEUIL USER ##########################################################################################
+
 # http://localhost:5000/pythinlogin/home - this will be the home page, only accessible for loggedin users
 @app.route('/login/home')           ## CREATION DE LA ROUTE "/login/home" QUI EST L'ACCEUIL USER
 def home():         
@@ -197,8 +237,7 @@ def home():
     return redirect(url_for('login'))   ## SI L'USER N'EST PAS CONNECTER ON LE REDIRIGE VERS LA ROUTE 'login' POUR QU'IL SE CONNECTE
 
 
-#**************************************************************************************PAGE PROFIL USER**********************************************************
-
+######################################################################################## PAGE PROFIL USER ########################################################################################
 
 # http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
 @app.route('/login/profile')        ## CREATION DE LA ROUTE "/login/profile" QUI EST LA PAGE DE PROFIL DE L'USER
@@ -214,7 +253,9 @@ def profile():
     # User is not loggedin redirect to login page
     return redirect(url_for('login'))       ## SI L'USER N'EST PAS CONNECTER ON LE REDIRIGE VERS LA PAGE DE CONNECION "login"
 
-#**************************************************************************************PAGE PROFIL POUR RESERVER**********************************************************
+
+
+########################################################################################"PAGE PROFIL POUR RESERVER###############################################################################
 
 
 # http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
