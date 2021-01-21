@@ -70,46 +70,57 @@ def login():
     if request.method == 'POST' and 'email' in request.form and 'password' in request.form:  # récuperation des information email et password dans le formulaire de loggin "index.html"
         # Create variables for easy access
         email = request.form['email']       # assignation du resultat de email contenu dans le formulaire dans la variable email
-        email = str(email)                  # conversion de de email en str() pour qu'il soit en chaine de caractere
-        
+        email = str(email) 
+                                         # conversion de de email en str() pour qu'il soit en chaine de caractere
+        password = request.form['password']     # assignation du resultat du password contenu dans le formulaire dans la variable password
+        password = str(password)
 
         
+
+
 
         cursor.execute('SELECT in_mdp FROM INFORMATION WHERE in_mail = %s' , (email,))   # requete pour recuperer le mdp hasher correspondant a l'email taper pour pouvoir le comparer par la suite
         mdp = cursor.fetchone()                 # assignation du resultat de la requete dans la variable mdp
 
-        password = request.form['password']     # assignation du resultat du password contenu dans le formulaire dans la variable password
-        password = str(password)                # conversion du password en str() pour qu'il soit en chaine de caractere
-        if check_password_hash(mdp[0], password) == True:       # verification si "mdp" de la base de donné qui est hasher correspond bien au mdp entrer par l'utilisateur dans le formulaire SI il est valable on peut continuer
-            cursor.execute('SELECT * FROM INFORMATION WHERE in_mail = %s', (email,))    # VU que le password correspond au mdp de la base de donnée on requete la database pour récuperer toutes les informations de l'utilisateur
-            # Fetch one record and return result
-        account = cursor.fetchone()         # assignation de toutes les information de la requete dans account sous forme de liste
+        if mdp != None:
 
-            # If account exists in accounts table in out database
-        if account and account[7] == 2:         # création de la session si le compte est bien un USER
-            # Create session data, we can access this data in other routes
+                        # conversion du password en str() pour qu'il soit en chaine de caractere
+            if check_password_hash(mdp[0], password) == True:       # verification si "mdp" de la base de donné qui est hasher correspond bien au mdp entrer par l'utilisateur dans le formulaire SI il est valable on peut continuer
+                cursor.execute('SELECT * FROM INFORMATION WHERE in_mail = %s', (email,))    # VU que le password correspond au mdp de la base de donnée on requete la database pour récuperer toutes les informations de l'utilisateur
+                # Fetch one record and return result
 
 
-            session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
-            session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
-            session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
-            session['role'] = account[7]
-            # Redirect to home page
-            return redirect(url_for('home'))
-        
-        elif account and account[7] == 1:   # création de la session si le compte est bien un ADMIN
-            
-            session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
-            session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
-            session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
-            session['role'] = account[7]
 
-            # Redirect to home page
-            return redirect(url_for('home_admin'))
-                    ## vu que l'utilisateur est bien connecté on le redirige vers la route 
-        else:        # si l'utilisateur n'existe pas OU si il tape une mauvaise adresse mail OU mot de passe ALORS  
-            # Account doesnt exist or username/password incorrect
-            msg = 'Incorrect username/password!'    # On lui affiche le message d'erreur
+                account = cursor.fetchone()         # assignation de toutes les information de la requete dans account sous forme de liste
+
+                # If account exists in accounts table in out database
+                if account and account[7] == 2:         # création de la session si le compte est bien un USER
+                    # Create session data, we can access this data in other routes
+
+
+                    session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
+                    session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
+                    session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
+                    session['role'] = account[7]
+
+
+                    # Redirect to home page
+                    return redirect(url_for('home'))
+                
+                elif account and account[7] == 1:   # création de la session si le compte est bien un ADMIN
+                    
+                    session['loggedin'] = True     ## le statut loggedin en True signifie que l'utilisateur est bien connecter
+                    session['id'] = account[0]      ## le session['id'] corréspond au 1ere élément de la liste de account
+                    session['email'] = account[1]      ## le session['email] correspond au 2eme élément de la liste de account
+                    session['role'] = account[7]
+
+                    # Redirect to home page
+                    return redirect(url_for('home_admin'))
+                        ## vu que l'utilisateur est bien connecté on le redirige vers la route 
+        else:
+            mdp == None    # si l'utilisateur n'existe pas OU si il tape une mauvaise adresse mail OU mot de passe ALORS  
+            msg = 'Incorrect username/password!' 
+            return render_template('index.html', msg=msg)
     # Show the login form with message (if any)
     return render_template('index.html', msg=msg)       ## On lui retourne le temple "index.html" qui contient le formulaire de connexion avec le message erreur initialiser dans "msg"
 
@@ -284,211 +295,232 @@ def profile():
 @app.route('/login/reservation',  methods=['GET', 'POST'])      ## CREATION DE LA ROUTE "/login/reservation" avec les méthode GET & POST POUR LA DEMANDE DE RESERVATION
 def reservation():  
 
+    #from .test import CheckReservation
+
+
     # Output message if something goes wrong...
+    
     msg = ''    ## ON INITIALISE LA variable "msg"
     # Check if user is loggedin
     if 'loggedin' in session:       ## SI L'USER EST BIEN CONNECTER
         
         # variable du message flash pour avertir l'utilisateur
         msg = ''
-        result = ''
-        salle_valide = ''
+        
         # récuperation des information du formualaire 
         if request.method == 'POST' and 'reservation' in request.form: 
             print(1)      ## ON RECUPERER LE message de reservation dans le formulaire 
-            mail_contenu = request.form['reservation']  ## on stocke la reservation dans "mail_contenu"
-            mail_contenu = str(mail_contenu)       ## on converti "mail_contenu" en chaine de caractere avec str()
-            
-            
-            #********************************** Traitement du mail en reservation***********************
-            
-
-            ####################################################### Motif pour la Salle ##########################################
-            motif_salle = (r"(?:salle+\s+\d+)|(?:Salle+\s+\d+)")
-
-            ####################################################### Motif pour la Date ##########################################
-
-            motif_date = (r"(?:\d+\s+janvier)|(?:\d+\s+fevrier)|(?:\d+\s+mars)|(?:\d+\s+avril)|(?:\d+\s+mai)|(?:\d+\s+juin)|(?:\d+\s+juillet)|(?:\d+\s+août)|(?:\d+\s+septembre)|(?:\d+\s+octobre)|(?:\d+\s+novembre)|(?:\d+\s+decembre)|(?:\d+\s+Janvier)|(?:\d+\s+Fevrier)|(?:\d+\s+Mars)|(?:\d+\s+Avril)|(?:\d+\s+Mai)|(?:\d+\s+Juin)|(?:\d+\s+Juillet)|(?:\d+\s+Août)|(?:\d+\s+Septembre)|(?:\d+\s+Octobre)|(?:\d+\s+Novembre)|(?:\d+\s+Decembre)|(?:\d+\s+January)|(?:\d+\s+February)|(?:\d+\s+March)|(?:\d+\s+April)|(?:\d+\s+May)|(?:\d+\s+June)|(?:\d+\s+July)|(?:\d+\s+Augut)|(?:\d+\s+September)|(?:\d+\s+October)|(?:\d+\s+November)|(?:\d+\s+December)|(?:\d+\s+january)|(?:\d+\s+february)|(?:\d+\s+march)|(?:\d+\s+april)|(?:\d+\s+Mai)|(?:\d+\s+june)|(?:\d+\s+july)|(?:\d+\s+august)|(?:\d+\s+september)|(?:\d+\s+october)|(?:\d+\s+november)|(?:\d+\s+december)")  #### (?:\d+.\d+) 12/03 pour la date format numérique
-
-            ####################################################### Motif pour les horraire ##########################################
-
-            motif_horraire = (r"(?:\d+.Heures)|(?:\d+.Heure)|(?:\d+.heures)|(?:\d+.heure)|(?:\d+.h)|(?:\d+.H)") #informations dans "mail_contenu"
-
-            ####################################################### Salle reserver ##########################################
+            mail = request.form['reservation']  ## on stocke la reservation dans "mail_contenu"
+            mail = str(mail)       ## on converti "mail_contenu" en chaine de caractere avec str()
+           
+            class CheckReservation:
+    
 
 
-            res_mail_salle = re.findall(motif_salle,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
-            num_salle_reserv = str(res_mail_salle[0])
-            num_salle_reserv = str(num_salle_reserv)
+                def __init__(self, mail, session):
+                    self.message = mail
+                    self.parameter_session_id = session
+                    self.salle = self._ParseMailSalle()
+                    self.date = self._ParseMailDate()
+                    self.horraire = self._ParseMailHorraire()
+                    self.check_horraire_valid = True if self.horraire[0] in range(8,20) and self.horraire[1] in range(8,20) else False
+                    self.check_salle_exist = self._CheckSalleExist()
+                    self.check_horraire_dispo = self._CheckHorraireDispo()
+                    self.sa_id = self._RecupSa_id()
+                    self.ma_id = self._RecupMa_id()
+                    self.insertResa = self._InsertResa()
+                    self.res_validation = self._IfResaValide()
 
-            ####################################################### Date reserver ##########################################
+            ################################################################### MOTIF SALLE ##############################################################       
+                def _ParseMailSalle(self):
+                    import re
+                    motif_salle = (r"(?:salle+\s+\d+)|(?:Salle+\s+\d+)")
+                    res_mail_salle = re.findall(motif_salle,self.message) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
+                    num_salle_reserv = str(res_mail_salle[0])
+                    num_salle_reserv = str(num_salle_reserv)
 
-            res_mail_date = re.findall(motif_date,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
+                    return num_salle_reserv
 
-            date_reserv = str(res_mail_date[0])
-            date_reserv = str(date_reserv)
-
-            ####################################################### HEURE reserver ##########################################
+            ################################################################################### MOTIF DATE ##############################################################
 
 
-            res_mail_horraire = re.findall(motif_horraire,mail_contenu) # application de la méthode findall() avec regex, on applique le motif sur le "mail_contenu", stocker dans la variable "res_mail"
-            res_mail_horraire
-            debut_reserv = res_mail_horraire[0][0:2]
-            debut_reserv = int(debut_reserv)
+                def _ParseMailDate(self):
+                    import re
+                    import dateparser
+                    import datetime
 
-            fin_reserv = res_mail_horraire[1][0:2]
-            fin_reserv = int(fin_reserv)   
-            time_reserv = fin_reserv - debut_reserv 
+                    motif_date = (r"(?:\d+\s+janvier)|(?:\d+\s+fevrier)|(?:\d+\s+mars)|(?:\d+\s+avril)|(?:\d+\s+mai)|(?:\d+\s+juin)|(?:\d+\s+juillet)|(?:\d+\s+août)|(?:\d+\s+septembre)|(?:\d+\s+octobre)|(?:\d+\s+novembre)|(?:\d+\s+decembre)|(?:\d+\s+Janvier)|(?:\d+\s+Fevrier)|(?:\d+\s+Mars)|(?:\d+\s+Avril)|(?:\d+\s+Mai)|(?:\d+\s+Juin)|(?:\d+\s+Juillet)|(?:\d+\s+Août)|(?:\d+\s+Septembre)|(?:\d+\s+Octobre)|(?:\d+\s+Novembre)|(?:\d+\s+Decembre)|(?:\d+\s+January)|(?:\d+\s+February)|(?:\d+\s+March)|(?:\d+\s+April)|(?:\d+\s+May)|(?:\d+\s+June)|(?:\d+\s+July)|(?:\d+\s+Augut)|(?:\d+\s+September)|(?:\d+\s+October)|(?:\d+\s+November)|(?:\d+\s+December)|(?:\d+\s+january)|(?:\d+\s+february)|(?:\d+\s+march)|(?:\d+\s+april)|(?:\d+\s+Mai)|(?:\d+\s+june)|(?:\d+\s+july)|(?:\d+\s+august)|(?:\d+\s+september)|(?:\d+\s+october)|(?:\d+\s+november)|(?:\d+\s+december)")  #### (?:\d+.\d+) 12/03 pour la date format numérique
+                    res_mail_date = re.findall(motif_date, self.message)
+                    date_reserv = str(res_mail_date[0])
+                    date_reserv = str(date_reserv)
+                    date_reserv = dateparser.parse(date_reserv)  
+                    now = datetime.datetime.now()   
 
-   
-            date_reserv = dateparser.parse(date_reserv)  
-            now = datetime.datetime.now()   
-            if date_reserv <= now:
-                now_year = now.year + 1     
-            else:                           
-                now_year = now.year                   
-            date_reserv = str(date_reserv)  
-            date_reserv = date_reserv[5:10] 
-            date_reserv = str(now_year) + ' ' + date_reserv  
-            date_reserv = dateparser.parse(date_reserv)
-            date_reserv = date_reserv.date()   
-            
-            if debut_reserv in range(0,25) and fin_reserv in range(0,25): 
-                debut_reserv = debut_reserv 
-                fin_reserv = fin_reserv     
-            else:
-                debut_reserv = False        
-                fin_reserv = False          ## l'heure fin n'est pas bonne
-                
+                    if date_reserv <= now:
+                        now_year = now.year + 1     
+                    else:                           
+                        now_year = now.year                   
+
+                    date_reserv = str(date_reserv)  
+                    date_reserv = date_reserv[5:10] 
+                    date_reserv = str(now_year) + ' ' + date_reserv  
+                    date_reserv = dateparser.parse(date_reserv)
+                    date_reserv = date_reserv.date()
+
+                    return date_reserv
+            ################################################################################### MOTIF HORRAIRE ##############################################################
                 
 
-            #********************************** Check de la dispo de la demande de reservation***********************
-            
+                def _ParseMailHorraire(self):
+                    import re
+                    motif_horraire = (r"(?:\d+.Heures)|(?:\d+.Heure)|(?:\d+.heures)|(?:\d+.heure)|(?:\d+.h)|(?:\d+.H)")
+                    res_mail_horraire = re.findall(motif_horraire,self.message)  
+                    
+                    debut_reserv = res_mail_horraire[0][0:2]
+                    debut_reserv = int(debut_reserv)
+                    
+                    fin_reserv = res_mail_horraire[1][0:2]
+                    fin_reserv = int(fin_reserv)   
+                    
+                    time_reserv = fin_reserv - debut_reserv
+
+                    return debut_reserv, fin_reserv, time_reserv
+                ################################################################################### CHECK SALLE EXIST  ##############################################################
 
 
+                def _CheckSalleExist(self):
+                    check_salle_exist = cursor.callproc('PSGetSALLEbyNAME',(self.salle,))[0]
+                    if check_salle_exist != None:
+                        return True
+                    else:
+                        return False
 
-            resa_db_salle = cursor.callproc('PSGetSALLEbyNAME',(num_salle_reserv,))[0]
-            #resa_db_salle = cursor.execute('SELECT * FROM SALLE WHERE sa_name = %s',(num_salle_reserv,))
-            
 
-            if resa_db_salle == None:
-                salle_valide = False
-                msg = "Salle non valide"
-                print('None',msg)
-            else:
-                msg = "Salle valide"
-                salle_valide = True
-                print("Il y as une salle")
-            
-            ## ON CHECK SI UNE RESERVATION EXISTE DEJA DANS LA BASE DE DONNEE POUR LE MEME "nom de salle" la même "DATE" et si les heures peuvent correspondre
-            ## ON STOCKE LE RESULTAT DE LA REQUETE DANS la variable "resa_db"
-            
-            ## SI LE RESULTAT DE LA REQUETE N'AS AUCUNNE CORRESPONDANCE et que les heure debut/fin son valide ALORS 
-            
+            ################################################################################### CHECK HORRAIRE DISPO  ##############################################################
 
-            cursor.execute('SELECT res_id, res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND(( %s BETWEEN R.res_heure_arrive AND R.res_heure_depart ) OR (%s BETWEEN R.res_heure_arrive AND R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,fin_reserv))
 
-            resa_db_1 = cursor.fetchone()
+                def _CheckHorraireDispo(self):
+                    
+                    if self.check_horraire_valid == True and self.check_salle_exist == True:
+                        
+                        cursor.execute('SELECT res_id, res_date, res_heure_arrive, res_heure_depart, S.sa_name FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND(( %s BETWEEN R.res_heure_arrive AND R.res_heure_depart ) OR (%s BETWEEN R.res_heure_arrive AND R.res_heure_depart));', (self.salle,self.date,self.horraire[0],self.horraire[1]))
+
+                        resa_db_1 = cursor.fetchone()
 
             #print(resa_db_1)
 
-            if resa_db_1 == None:
-                result = True#,"TESTING OK FIRST"
-                print(result)
+                        if resa_db_1 == None:
+                            result = True
+                            return result
 
-###################################################### TEST DU SI L'HEURE  DE DEBUT DEMANDER CORRESPOND A UNE HEURE DE FIN DEJA EXISTANTE#####################
-            elif resa_db_1 != None and debut_reserv == resa_db_1[3]:
-                cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s >= R.res_heure_arrive AND %s <= R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
-                result_fin_to_debut_reserv = cursor.fetchone()
-    
-                if result_fin_to_debut_reserv == None and resa_db_1 != None:
-                    result = True#,"TESTING IS OK 1"
-                    print(result)
-    
-
-
-########################################################### TEST DU SI L'HEURE DE FIN DEMANDER CORRESPOND A UNE HEURE DE DEBUT DEJA EXISTANTE#################
-
-            elif resa_db_1 != None and fin_reserv == resa_db_1[2]:
-                cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s >= R.res_heure_arrive AND %s <= R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (num_salle_reserv,date_reserv,debut_reserv,debut_reserv, fin_reserv,fin_reserv))
-                result_debut_to_fin_reserv = cursor.fetchone()
-    
-                if result_debut_to_fin_reserv == None and resa_db_1 != None:
-                    result = True#,"TESTING IS OK 2"
-                    print(result)
+                        ###################################################### TEST DU SI L'HEURE  DE DEBUT DEMANDER CORRESPOND A UNE HEURE DE FIN DEJA EXISTANTE#####################
+                        elif resa_db_1 != None and self.horraire[0] == resa_db_1[3]:
+                            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s > R.res_heure_arrive AND %s < R.res_heure_depart) OR (%s >= R.res_heure_arrive AND %s <= R.res_heure_depart));', (self.salle,self.date,self.horraire[0],self.horraire[0],self.horraire[1],self.horraire[1]))
+                            result_fin_to_debut_reserv = cursor.fetchone()
+                            
+                            if result_fin_to_debut_reserv == None and resa_db_1 != None:
+                                result = True
+                                return result
+                            
 
 
-            else:
-                #result_fin_to_debut_reserv != None and resa_db_1 != None or result_debut_to_fin_reserv != None and resa_db_1 != None
-                result = False#,"TESTING NOT OK 1"
-                print(result)
+            ########################################## TEST DU SI L'HEURE DE FIN DEMANDER CORRESPOND A UNE HEURE DE DEBUT DEJA EXISTANTE#################
+
+                        elif resa_db_1 != None and self.horraire[1] == resa_db_1[2]:
+                            cursor.execute('SELECT * FROM RESERVATION R INNER JOIN SALLE S ON S.sa_id=R.sa_id WHERE S.sa_name=%s AND R.res_date=%s AND ((%s >= R.res_heure_arrive AND %s <= R.res_heure_depart) OR (%s > R.res_heure_arrive AND %s < R.res_heure_depart));', (self.salle,self.date,self.horraire[0],self.horraire[0],self.horraire[1],self.horraire[1]))
+                            result_debut_to_fin_reserv = cursor.fetchone()
+                            
+                            if result_debut_to_fin_reserv == None and resa_db_1 != None:
+                                result = True
+                                return result
 
 
+                        else:
+                            #result_fin_to_debut_reserv != None and resa_db_1 != None or result_debut_to_fin_reserv != None and resa_db_1 != None
+                            result = False
+                            return result
+
+            ########################################## ##############################################################################################""################
+
+                def _RecupSa_id(self):
+                    
+                    try:
+                        if self.check_salle_exist == True:
+                        
+                            cursor.execute('SELECT sa_id FROM SALLE WHERE sa_name = %s ', (self.salle,)) ## ON REQUETE LA DATABASE POUR RECUPER L'ID DE LA SALLE DEMANDER PAR LE NOM DE LA SALLE
+                            sa_id_recup = cursor.fetchone() # on stocke le resultat de la requete dans "sa_id_recup"
+                            sa_id_recup = str(sa_id_recup[0])    # sa_id_recup est initialise avec son premier élément de sa liste
+                            return sa_id_recup
+                    except TypeError:
+                        
+                        if sa_id_recup == None:
+                            sa_id_recup = False
+                            return sa_id_recup
+
+            ############################################################################################################################################################################
+                
+                def _RecupMa_id(self):
+
+                    if self.check_horraire_dispo == True and self.check_salle_exist == True and self.sa_id != False:
+                        cursor.callproc("PI_MAIL_SIMPLE", [self.message, self.parameter_session_id,],)
+                        connection.commit()
+
+                ### recup ma_id du mail inserer dans le dernier ma_contenu de l'user
+                        cursor.execute('SELECT ma_id FROM MAIL WHERE in_id = %s ORDER BY ma_date DESC LIMIT 1 ', (self.parameter_session_id,))   ## ON RECUPERE LE DERNIER MAIL ENVOYER DE L'USER ORDONNER PAR LA DATE ET L'HEURE ET SECONDE LA PLUS RECENTE 
+                        ma_id_recup = cursor.fetchone() ## ON STOCKE LE RESULTAT DE LA REQUETE DANS LA VARIABLE "ma_id_recup"
+                        ma_id_recup = ma_id_recup[0]    ## ma_id_recup est initialise avec son premier élément de sa liste
+
+                        return ma_id_recup
+
+                    else:
+                        ma_id_recup = False
+                        return ma_id_recup
+            ############################################################## DECOUPE DU PROCESS DE L'INSERTION MAIL + RESA ###################################################
+
+
+
+                def _InsertResa(self):
+                    if self.sa_id != False and self.ma_id != False:
+                        args1 = self.date
+                        args2 = self.horraire[0]
+                        args3 = self.horraire[1]
+                        args4 = self.horraire[2]
+                        args5 = self.sa_id
+                        args6 = self.ma_id
+                        cursor.callproc("PI_RES_SIMPLE", (args1,args2,args3,args4,args5,args6,))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
+                        connection.commit()
+                        
+                    
+                        return True
+                    else:
 
                     
+                        return False
+                            ############################################################################################################################################################################
+
+                def _IfResaValide(self):
+                    
+                    if self.insertResa:
+                        msg = 'You have successfully send your reservation !'
+                        return msg
+
+                    
+                    else:
+                        msg = 'RESERVATION NOT VALIDE !'
+                        return msg
 
 
-
-
-
-            if result == True and salle_valide == True:             
-            ### insert ma_contenu + reservation
-            #**********************************Si check OK insertion dans la table MAIL*********************
-                parameter_ma_contenu = mail_contenu ## on initialise le mail_contenu dans la variable "parameter_ma_contenu"
-                parameter_session_id = session['id'] ## on initialise le session['id'] qui est l'id de la session en cours dans la variable "parameter_session_id"
-
-                cursor.callproc("PI_MAIL_SIMPLE", [parameter_ma_contenu,parameter_session_id,],)    ## ON INSERE DANS LA TABLE MAIL LE MAIL CONTENU ET L'ID DE LA SESSION
-                connection.commit() ## ON VALIDE L'INSERTION
-                
-                ### recup ma_id du mail inserer dans le dernier ma_contenu de l'user
-                cursor.execute('SELECT ma_id FROM MAIL WHERE in_id = %s ORDER BY ma_date DESC LIMIT 1 ', (parameter_session_id,))   ## ON RECUPERE LE DERNIER MAIL ENVOYER DE L'USER ORDONNER PAR LA DATE ET L'HEURE ET SECONDE LA PLUS RECENTE 
-                ma_id_recup = cursor.fetchone() ## ON STOCKE LE RESULTAT DE LA REQUETE DANS LA VARIABLE "ma_id_recup"
-                ma_id_recup = ma_id_recup[0]    ## ma_id_recup est initialise avec son premier élément de sa liste
-                
-                
-                ### recup le sa_id where num_salle_reserv
-                cursor.execute('SELECT sa_id FROM SALLE WHERE sa_name = %s', (num_salle_reserv,)) ## ON REQUETE LA DATABASE POUR RECUPER L'ID DE LA SALLE DEMANDER PAR LE NOM DE LA SALLE
-                sa_id_recup = cursor.fetchone() # on stocke le resultat de la requete dans "sa_id_recup"
-                sa_id_recup = str(sa_id_recup[0])    # sa_id_recup est initialise avec son premier élément de sa liste
-
-
-
-             #********************************** Insertion du contenu en reservation dans RESERVATION***********************
-                args1 = date_reserv
-                args2 = debut_reserv
-                args3 = fin_reserv
-                args4 = time_reserv
-                args5 = sa_id_recup
-                args6 = ma_id_recup
-                
-                #args = [date_reserv,debut_reserv,fin_reserv,time_reserv,sa_id_recup,ma_id_recup,] ### ASSIGNATION DANS "args" LISTE DES ARGUMENT D'ENTRER DANS LA PROCEDURE SOTCKE POUR INSERER LA RESERVATION
-                cursor.callproc("PI_RES_SIMPLE", (args1,args2,args3,args4,args5,args6,))    ### EXECUTION DE LA PROCEDURE STOCKE POUR INSERER LA RESERVATION
-                connection.commit()     ## ON VALIDE L'INSERTION
-                
-                # fetch result parameters
-                
-                
-
-                msg = 'You have successfully send your reservation !'       ## ON AVERTIE L'USER qu'il a bien envoyer sa reservation 
-                print(msg)
-
-            else:
-                msg = 'your reservation is invalid!' ### AJOUTER CONDITION IF AND ELSE TEST POUR LE MSG SOIT DIFFERENT
-                print(msg)
-
-
-
-
-
-            
-    
-    
+                def _Getmessage(self):
+                    return self.res_validation #, self.insertresa
+      
+            testclass = CheckReservation(mail,session['id'])
+            msg = testclass._Getmessage()
+        
         return render_template('login_reservation.html' , msg=msg) ## SI L'USER EST CONNECTER ON AFFICHE LE TEMPLATE DE DEMANDE DE RESERVATION "login_reservation.thml"
     else:   ## SINON 
         return redirect(url_for('login')) ## ON LE REDIRIGE VERS LA PAGE DE CONNEXION "login"
     # User is not loggedin redirect to login page
     #return redirect(url_for('login'))
-
 
 #**************************************************************************************DEFINITION DU PORT DE l'APP**********************************************************
 if __name__=='__main__':
