@@ -8,13 +8,45 @@
     <p>Your account details are below:</p>
     <table>
        
-        <tr>
-            <td>Password:</td>
-            <td>{{ account[2] }}</td>
-        </tr>
+        
         <tr>
             <td>Email:</td>
             <td>{{ account[1] }}</td>
+        </tr>
+    </table>
+</div>
+<div>
+    <p>Vos reservation effectuez:</p>
+    <table>
+       
+        
+        <tr>
+            <td>Date:</td>
+            <td>{{ reservation[0][0] }}</td>
+        </tr>
+
+         <tr>
+            <td>Heure de début:</td>
+            <td>{{ reservation[0][1] }}</td>
+            
+        </tr>
+
+        <tr>
+            <td>Heure de fin:</td>
+            <td>{{ reservation[0][2] }}</td>
+            
+        </tr>
+        
+        <tr>
+            <td>Temps réserver:</td>
+            <td>{{ reservation[0][3] }}</td>
+            
+        </tr>
+
+        <tr>
+            <td>Nom de salle:</td>
+            <td>{{ reservation[0][4] }}</td>
+            
         </tr>
     </table>
 </div>
